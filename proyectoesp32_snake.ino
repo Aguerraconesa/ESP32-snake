@@ -29,6 +29,9 @@ void drawfood();
 void readdirection();
 void movesnake();
 void drawsnake();
+bool checkselfcolision();
+void losescreen();
+void eatfood();
 
 void setup() {
   pinMode(botright, INPUT_PULLUP);
@@ -67,7 +70,16 @@ void loop() {
 
   // Move the snake
   snakemove();
-  
+
+  // ver si te has topado con el cuerpo
+  checkselfcolision();
+
+  // losescreen
+  losescreen();
+
+  //comer fruta
+  eatfood();
+
   display.clearDisplay();
   // Draw the snake in the display
   drawsnake();
@@ -84,16 +96,23 @@ void foodgeneration()
 {
   if (foodneed)
   {
-    foodX = random(0, SCREEN_WIDTH-6); 
-    foodY = random(0, SCREEN_HEIGHT-6);
+    bool validposition;
+    do
+    {
+      validposition = true;
+      foodX = random(0, SCREEN_WIDTH-6); 
+      foodY = random(0, SCREEN_HEIGHT-6);
+      for(int i = 0; i < snakelength; i++)
+      {
+        if(abs(foodY - snakeY[i]) < 6 && abs(foodX - snakeX[i]) < 6)
+        {
+          validposition = false;
+          break;
+        }
+      }
+    } while (!validposition);
     foodneed = false;
   }
-  
-}
-
-void drawfood()
-{
-    display.fillCircle(foodX, foodY, 3, WHITE);
 }
 
 void readdirection()
@@ -146,10 +165,52 @@ void snakemove()
   snakeY[0] = constrain(snakeY[0], 0, SCREEN_HEIGHT - 6);
 } 
 
+
+bool checkselfcolision()
+{
+  for(int i = 1; i < snakelength; i++)
+  {
+    if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i])
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+void losescreen()
+{
+  if(checkselfcolision())
+  {
+    display.clearDisplay();
+    display.setTextSize(4);
+    display.setCursor(0,0);
+    display.println("GAME OVER");
+    display.display();
+    snakelength = 3;
+    snakeX[0] = 64; snakeY[0] = 32;
+  }
+}
+
+void eatfood()
+{
+  if(abs(foodX - snakeX[0] < 4) && abs(foodY - snakeY[0]) < 4)
+  {
+    display.clearDisplay();
+    foodneed = true;
+    snakelength++;
+  }
+}
+
 void drawsnake()
 {
   for (int i = 0; i < snakelength; i++) 
   {
     display.fillRect(snakeX[i], snakeY[i], 6, 6, WHITE);
   }
+}
+
+void drawfood()
+{
+  display.fillCircle(foodX, foodY, 3, WHITE);
 }
