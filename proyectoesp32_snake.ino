@@ -32,6 +32,7 @@ void drawsnake();
 bool checkselfcolision();
 void losescreen();
 void eatfood();
+void waitbuttonpress();
 
 void setup() {
   pinMode(botright, INPUT_PULLUP);
@@ -53,12 +54,13 @@ void setup() {
   snakeX[2] = 52; snakeY[2] = 32;  // Segmento 2
 
   display.clearDisplay();
-  display.setTextSize(1);
+  display.setTextSize(2);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println("Hola Snake");
+  display.println("SNAKE GAME");
   display.display();
-  delay(1000);
+
+  waitbuttonpress();
 }
 
 void loop() {
@@ -90,6 +92,17 @@ void loop() {
   display.display();
   // it controls the speed
   delay(200);
+}
+
+void waitbuttonpress()
+{
+  bool botonpresionado = true;
+  do{
+    if (digitalRead(botright) == LOW || digitalRead(botup) == LOW || digitalRead(botdown) == LOW || digitalRead(botleft) == LOW)
+    {
+      botonpresionado = false;
+    }
+  }while(botonpresionado);
 }
 
 void foodgeneration()
@@ -187,6 +200,7 @@ void losescreen()
     display.setCursor(0,0);
     display.println("GAME OVER");
     display.display();
+    waitbuttonpress();
     snakelength = 3;
     snakeX[0] = 64; snakeY[0] = 32;
   }
@@ -194,11 +208,14 @@ void losescreen()
 
 void eatfood()
 {
-  if(abs(foodX - snakeX[0] < 4) && abs(foodY - snakeY[0]) < 4)
-  {
-    display.clearDisplay();
+  // Detección por área rectangular (cabeza 6x6, comida 6x6)
+  if (snakeX[0] < foodX + 6 && 
+      snakeX[0] + 6 > foodX && 
+      snakeY[0] < foodY + 6 && 
+      snakeY[0] + 6 > foodY) {
     foodneed = true;
     snakelength++;
+    Serial.println("Comida comida!");
   }
 }
 
